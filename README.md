@@ -1,49 +1,58 @@
-# SR-Agents
+# SR-Agents: Skill Retrieval Augmentation for Agentic AI
 
-[![Dataset on 🤗](https://huggingface.co/datasets/huggingface/badges/resolve/main/dataset-on-hf-md.svg)](https://huggingface.co/datasets/WeihangSu/SRA-Bench)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10--3.12-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+<p align="center">
+  <a href="https://arxiv.org/abs/2604.24594">
+    <img src="https://img.shields.io/badge/arXiv-2604.24594-b31b1b.svg" alt="arXiv">
+  </a>
+  <a href="https://huggingface.co/datasets/WeihangSu/SRA-Bench">
+    <img src="https://img.shields.io/badge/🤗%20HuggingFace-SRA--Bench-yellow" alt="HuggingFace">
+  </a>
+  <a href="https://github.com/oneal2000/SR-Agents/stargazers">
+    <img src="https://img.shields.io/github/stars/oneal2000/SR-Agents?style=social" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/oneal2000/SR-Agents/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  </a>
+</p>
 
-A benchmark and research toolkit for **skill-retrieval-augmented LLM
-agents**.
+<p align="center">
+  <b>Can LLM agents scale to massive libraries of reusable skills?</b><br>
+  <b>SR-Agents</b> introduces <b>Skill Retrieval Augmentation (SRA)</b>: a new paradigm where agents dynamically retrieve, incorporate, and apply external skills from large-scale skill corpora on demand.
+</p>
 
-Modern LLM agents increasingly rely on reusable external *skills* —
-modular capability packages that pair natural-language guidance with
-executable resources — to solve tasks that exceed their native
-parametric ability. As skill libraries grow into the tens or hundreds
-of thousands, the prevailing practice of enumerating every candidate
-skill in the prompt stops scaling: context budgets fill up, and
-selection accuracy degrades as the skill list grows.
+---
 
-**Skill Retrieval Augmentation (SRA)** is an alternative paradigm in
-which the agent dynamically retrieves, incorporates, and applies
-relevant skills from a large external skill library on demand. This
-repository provides:
+## 🔥 Why Skill Retrieval Augmentation?
 
-* **SRA-Bench** — 5,400 capability-intensive test instances across six
-  task families, each paired with manually curated gold skill(s),
-  embedded in a realistic skill library of 26,262 skills (636 gold +
-  25,626 web-collected distractors).
-* **SR-Agents** — a baseline family of skill-retrieval-augmented
-  agents, spanning five skill-use methods (LLM Direct, Oracle Skill,
-  Full-Skill Injection, LLM Selection, Progressive Disclosure) and six
-  retrievers (BM25, TF-IDF, BGE, Contriever, Hybrid, BM25 + LLM Rerank).
+Modern LLM agents are no longer just text generators. They increasingly rely on external **skills**: reusable capability packages that may include natural-language instructions, tool-use procedures, executable code, and auxiliary resources.
 
-![SRA paradigm overview](assets/overall.png)
+However, the dominant way to use skills today is still simple but unscalable: put available skills into the prompt and ask the model to choose. As skill libraries grow, this approach quickly runs into context-window limits and selection failures.
 
-*The Skill Retrieval Augmentation paradigm: the agent retrieves candidate
-skills from a large external skill library, selectively incorporates
-useful ones into context, and applies them for downstream reasoning
-and acting.*
+**Skill Retrieval Augmentation (SRA)** treats skills as a large external capability corpus. Instead of showing all skills in context, an agent must:
 
-## SRA-Bench at a glance
+1. **Retrieve** relevant skills from a large skill library;
+2. **Incorporate** the useful skills into its active problem-solving state;
+3. **Apply** the skills correctly to improve downstream task performance.
 
-**6 source datasets · 5,400 test instances · 636 gold skills** embedded
-in a skill library of **26,262 skills** (2.4% gold, 25,626 web-collected
-distractors).
+This makes SRA a capability-centric counterpart to RAG:  
+RAG retrieves knowledge; **SRA retrieves executable capabilities**.
 
-Gold-skill annotations associate each instance with either a single
-gold skill (**Single**) or multiple gold skills (**Multi**).
+---
+
+## 🚀 What is included?
+
+This repository releases the code and data for **Skill Retrieval Augmentation for Agentic AI**.
+
+### SRA-Bench
+
+The first benchmark for decomposed evaluation of Skill Retrieval Augmentation:
+
+- **5,400** capability-intensive test instances;
+- **636** manually constructed gold skills;
+- **26,262** total skills in the retrieval corpus;
+- Gold skills mixed with **25,626** web-collected distractor skills;
+- Six task families: TheoremQA, LogicBench, ToolQA, MedCalc-Bench, CHAMP, and BigCodeBench;
+- Evaluation of the full SRA pipeline: skill retrieval, skill incorporation, and end-task execution.
 
 | Dataset | Capability Type | #Inst. | #Skills | Skill Mapping | Evaluation |
 |---|---|---:|---:|---|---|
@@ -53,6 +62,31 @@ gold skill (**Single**) or multiple gold skills (**Multi**).
 | MedCalc-Bench | Medical Calculators | 1,100 | 55 | Single | Rule-Based |
 | CHAMP | Mathematical Concepts | 223 | 89 | Multi | Rule-Based |
 | BigCodeBench | Software Libraries | 1,140 | 139 | Multi | Execution |
+
+### SR-Agents
+
+A research toolkit and baseline family for building and evaluating skill-retrieval-augmented agents:
+
+- Skill retrieval with BM25, TF-IDF, BGE, Contriever, Hybrid retrieval, and BM25 + LLM reranking;
+- Skill-use methods including LLM Direct, Oracle Skill, Full-Skill Injection, LLM Selection, and Progressive Disclosure;
+- End-to-end CLI pipeline: `retrieve → infer → evaluate`;
+- Support for OpenAI-compatible endpoints, including hosted APIs, vLLM, SGLang, Ollama, and local model servers.
+
+---
+
+## ⭐ Star and cite
+
+If you find **SRA-Bench** or **SR-Agents** useful for research on LLM agents, RAG, tool use, agent memory, skill learning, or capability augmentation, please consider:
+
+- ⭐ starring this repository to help more researchers discover it;
+- 📌 citing our paper in your work.
+
+Your stars and citations help establish **Skill Retrieval Augmentation** as a shared research problem for scalable agent capabilities.
+
+![SRA paradigm overview](assets/overall.png)
+
+
+
 
 ## Install
 
