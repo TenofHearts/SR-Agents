@@ -1,6 +1,4 @@
-# Bench data is distributed via HuggingFace
-# (`huggingface-cli download WeihangSu/SRA-Bench --repo-type dataset --local-dir data/bench`).
-data/bench/
+data/bench/corpus/corpus.json
 data/external/
 
 # Experiment outputs

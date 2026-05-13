@@ -106,8 +106,16 @@ Requires Python 3.10 – 3.12.
 pip install -e .       # or: uv sync
 ```
 
-Download SRA-Bench (skill corpus + test instances) from the
-[HuggingFace dataset page](https://huggingface.co/datasets/WeihangSu/SRA-Bench):
+SRA-Bench ships with this repository under `data/bench/`. After
+cloning, unzip the skill corpus once:
+
+```bash
+unzip data/bench/corpus/corpus.json.zip -d data/bench/corpus/
+```
+
+The same data is also published on
+[HuggingFace](https://huggingface.co/datasets/WeihangSu/SRA-Bench) —
+use either source, the contents are identical:
 
 ```bash
 huggingface-cli download WeihangSu/SRA-Bench --repo-type dataset \
