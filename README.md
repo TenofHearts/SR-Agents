@@ -39,6 +39,9 @@ However, the dominant way to use skills today is still simple but unscalable: pu
 This makes SRA a capability-centric counterpart to RAG:  
 RAG retrieves knowledge; **SRA retrieves executable capabilities**.
 
+![SRA paradigm overview](assets/overall.png)
+
+
 ---
 
 ## 🚀 What is included?
@@ -78,16 +81,21 @@ A research toolkit and baseline family for building and evaluating skill-retriev
 
 ## ⭐ Star and cite
 
-If you find **SRA-Bench** or **SR-Agents** useful for research on LLM agents, RAG, tool use, agent memory, skill learning, or capability augmentation, please consider:
+If you find **SRA-Bench** useful, or if any findings in our paper help your research, we would be truly grateful if you could:
 
-- ⭐ starring this repository to help more researchers discover it;
-- 📌 citing our paper in your work.
+⭐ star this repository to help more researchers discover this resource;  
+📌 cite our paper in your work.
 
-Your stars and citations help establish **Skill Retrieval Augmentation** as a shared research problem for scalable agent capabilities.
+Your support really means a lot to us!
 
-![SRA paradigm overview](assets/overall.png)
-
-
+```bibtex
+@article{su2026skill,
+  title={Skill Retrieval Augmentation for Agentic AI},
+  author={Su, Weihang and Long, Jianming and Ai, Qingyao and Tang, Yichen and Wang, Changyue and Tu, Yiteng and Liu, Yiqun},
+  journal={arXiv preprint arXiv:2604.24594},
+  year={2026}
+}
+```
 
 
 ## Install
