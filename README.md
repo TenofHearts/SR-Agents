@@ -16,8 +16,13 @@
 </p>
 
 <p align="center">
-  <b>Can LLM agents scale to massive libraries of reusable skills?</b><br>
-  <b>SR-Agents</b> introduces <b>Skill Retrieval Augmentation (SRA)</b>: a new paradigm where agents dynamically retrieve, incorporate, and apply external skills from large-scale skill corpora on demand.
+  <b>A benchmark, skill corpus, and toolkit for studying Skill Retrieval Augmentation in LLM agents.</b><br>
+  This repository provides <b>SRA-Bench</b> and <b>SR-Agents</b> to support research on how agents retrieve, incorporate, and apply reusable external skills from large-scale skill libraries.
+</p>
+
+<p align="center">
+  We welcome the community to use this resource for research on <b>skill retrieval</b>, <b>skill incorporation</b>, <b>agent memory</b>, <b>tool/skill use</b>, and <b>scalable capability augmentation</b>.<br>
+  If this repository is helpful to your work, please consider giving us a ⭐ and citing our paper.
 </p>
 
 ---
