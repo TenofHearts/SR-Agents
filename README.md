@@ -16,14 +16,11 @@
 </p>
 
 <p align="center">
-  <b>A benchmark, skill corpus, and toolkit for studying Skill Retrieval Augmentation in LLM agents.</b><br>
-  This repository provides <b>SRA-Bench</b> and <b>SR-Agents</b> to support research on how agents retrieve, incorporate, and apply reusable external skills from large-scale skill libraries.
+  <b>A community resource for studying and evaluating Skill Retrieval Augmentation.</b><br>
+  This repository releases SRA-Bench and SR-Agents, providing data, baselines, and evaluation pipelines for research on retrieval-based skill augmentation in LLM agents.<br>
+  ⭐ If you find this resource useful, please star this repo and cite our paper.
 </p>
 
-<p align="center">
-  We welcome the community to use this resource for research on <b>skill retrieval</b>, <b>skill incorporation</b>, <b>agent memory</b>, <b>tool/skill use</b>, and <b>scalable capability augmentation</b>.<br>
-  If this repository is helpful to your work, please consider giving us a ⭐ and citing our paper.
-</p>
 
 ---
 
