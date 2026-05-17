@@ -16,6 +16,8 @@ External plugins are loaded via ``sragents --plugin my.module`` or
 ``[project.entry-points."sragents.prompt_builders"]``.
 """
 
+from __future__ import annotations
+
 from typing import Callable
 
 _BUILDERS: dict[str, Callable[[dict], tuple[str, str]]] = {}
