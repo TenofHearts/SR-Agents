@@ -16,8 +16,8 @@
 </p>
 
 <p align="center">
-  <b>A community resource for studying and evaluating Skill Retrieval Augmentation.</b><br>
-  This repository releases SRA-Bench and SR-Agents, providing data, baselines, and evaluation pipelines for research on retrieval-based skill augmentation in LLM agents.<br>
+  <b>A community resource for studying and evaluating Skill Retrieval Augmentation.</b><br><br>
+  This repository releases SRA-Bench and SR-Agents, providing data, baselines, and evaluation pipelines for research on retrieval-based skill augmentation in LLM agents.<br><br>
   ⭐ If you find this resource useful, we would be truly grateful if you could star this repo and cite our paper~
 </p>
 
