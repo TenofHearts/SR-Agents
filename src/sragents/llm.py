@@ -45,18 +45,41 @@ def get_extra_body(model: str, thinking: bool = False) -> dict | None:
 
       - Qwen3: chat_template_kwargs.enable_thinking
       - GLM-5 / Kimi: enable_thinking
-      - GPT-5: reasoning_effort="minimal" (always)
+      - GPT-5: reasoning_effort="none" (always)
       - Others (Llama, Mistral, MiniMax, ...): no flag
     """
     basename = model.lower().rsplit("/", 1)[-1]
 
     if "qwen3" in basename:
-        return {"chat_template_kwargs": {"enable_thinking": thinking}}
+        return {"enable_thinking": thinking}
     if "gpt-5" in basename:
-        return {"reasoning_effort": "minimal"}
+        return {"reasoning_effort": "none"}
     if "glm-5" in basename or "kimi" in basename:
         return {"enable_thinking": thinking}
     return None
+
+
+def _uses_completion_token_limit(model: str) -> bool:
+    basename = model.lower().rsplit("/", 1)[-1]
+    return "gpt-5" in basename
+
+
+def _chat_kwargs(
+    model: str,
+    messages: list[dict],
+    temperature: float,
+    max_tokens: int,
+) -> dict:
+    kwargs = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature,
+    }
+    if _uses_completion_token_limit(model):
+        kwargs["max_completion_tokens"] = max_tokens
+    else:
+        kwargs["max_tokens"] = max_tokens
+    return kwargs
 
 
 def chat(
@@ -75,12 +98,7 @@ def chat(
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    kwargs = dict(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    kwargs = _chat_kwargs(model, messages, temperature, max_tokens)
     if stop:
         kwargs["stop"] = stop
     if extra_body:
@@ -100,12 +118,7 @@ def chat_messages(
     extra_body: dict | None = None,
 ) -> str:
     """Send chat completion with an explicit messages list (for multi-turn)."""
-    kwargs = dict(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    kwargs = _chat_kwargs(model, messages, temperature, max_tokens)
     if stop:
         kwargs["stop"] = stop
     if extra_body:
