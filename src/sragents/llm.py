@@ -23,12 +23,14 @@ _THINK_CLOSED_RE = re.compile(r"<think>.*?</think>\s*", re.DOTALL)
 _THINK_OPEN_RE = re.compile(r"<think>.*", re.DOTALL)
 
 
-def strip_think_tags(text: str) -> str:
+def strip_think_tags(text: str | None) -> str:
     """Remove <think>...</think> blocks from an LLM response.
 
     Handles both well-formed `<think>...</think>answer` and truncation
     cases where generation is cut mid-thinking (unclosed tag).
     """
+    if text is None:
+        return ""
     if "<think>" not in text:
         return text
     text = _THINK_CLOSED_RE.sub("", text)
