@@ -3,11 +3,19 @@ single chosen skill for downstream inference."""
 
 import json
 import re
+import threading
 from pathlib import Path
 
 from sragents.corpus import load_corpus_dict
 from sragents.infer.base import register_provider
-from sragents.llm import chat, create_llm_client, get_extra_body, strip_think_tags
+from sragents.llm import (
+    chat,
+    create_llm_client,
+    get_extra_body,
+    pop_usage_events,
+    strip_think_tags,
+    summarize_usage,
+)
 from sragents.prompts import build_prompt
 
 _PROMPT = """\
@@ -82,8 +90,11 @@ class LLMSelectProvider:
             )
         data = json.loads(src.read_text())
         self._lookup = {r["instance_id"]: r["retrieved"] for r in data["results"]}
+        self._meta_by_instance: dict[str, dict] = {}
+        self._meta_lock = threading.Lock()
 
     def provide(self, instance: dict) -> list[dict]:
+        instance_id = instance["instance_id"]
         retrieved = self._lookup.get(instance["instance_id"], [])[: self._pool]
         candidates = [
             self._corpus[r["skill_id"]]
@@ -91,21 +102,50 @@ class LLMSelectProvider:
             if r["skill_id"] in self._corpus
         ]
         if not candidates:
+            self._set_meta(instance_id, [], None, "no_candidates")
             return []
         if len(candidates) == 1:
+            self._set_meta(instance_id, [], 0, "single_candidate")
             return candidates
 
         _, query = build_prompt(instance)
         prompt = _PROMPT.format(query=query, candidates=_format_candidates(candidates))
+        usage_events = []
 
         for _ in range(self._max_retries):
+            pop_usage_events()
             response = chat(
                 self._client, self._model, prompt,
                 temperature=0.0, max_tokens=64,
                 extra_body=self._extra_body,
             )
+            usage_events.extend(pop_usage_events())
             idx = _parse_first_number(response, len(candidates))
             if idx is not None:
+                self._set_meta(instance_id, usage_events, idx, "selected")
                 return [candidates[idx]]
 
+        self._set_meta(instance_id, usage_events, 0, "fallback_rank1")
         return [candidates[0]]  # fallback: rank 1
+
+    def pop_meta(self, instance_id: str) -> dict:
+        with self._meta_lock:
+            return self._meta_by_instance.pop(instance_id, {})
+
+    def _set_meta(
+        self,
+        instance_id: str,
+        usage_events: list[dict],
+        selected_index: int | None,
+        status: str,
+    ) -> None:
+        payload = {
+            "llm_usage": {"selection": summarize_usage(usage_events)},
+            "llm_select": {
+                "status": status,
+                "selected_index": selected_index,
+                "pool": self._pool,
+            },
+        }
+        with self._meta_lock:
+            self._meta_by_instance[instance_id] = payload

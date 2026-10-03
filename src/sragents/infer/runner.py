@@ -9,6 +9,7 @@ already-completed instances automatically.
 import json
 import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -91,9 +92,16 @@ def run_many(
     engine_kwargs = engine_kwargs or {}
 
     def _one(inst: dict) -> InferenceRecord:
+        started = time.perf_counter()
         try:
             skills = provider.provide(inst)
             result = engine.run(inst, skills, client, model, **engine_kwargs)
+            provider_meta = {}
+            pop_meta = getattr(provider, "pop_meta", None)
+            if callable(pop_meta):
+                provider_meta = pop_meta(inst["instance_id"])
+            meta = _merge_meta(provider_meta, result.meta)
+            meta["wall_time_ms"] = round((time.perf_counter() - started) * 1000)
             return InferenceRecord(
                 instance_id=inst["instance_id"],
                 dataset=inst["dataset"],
@@ -102,7 +110,7 @@ def run_many(
                 raw_output=result.raw_output,
                 transcript=result.transcript,
                 skill_ids_used=result.skill_ids_used,
-                meta=result.meta,
+                meta=meta,
             )
         except Exception as e:  # noqa: BLE001
             print(f"\n  ERROR on {inst['instance_id']}: {e}", file=sys.stderr)
@@ -112,6 +120,7 @@ def run_many(
                 method=label,
                 model=model_name,
                 raw_output="",
+                meta={"wall_time_ms": round((time.perf_counter() - started) * 1000)},
                 error=str(e),
             )
 
@@ -125,3 +134,27 @@ def run_many(
                     bar.update(1)
 
     print(f"  wrote {len(pending)} records → {output_path}")
+
+
+def _merge_meta(provider_meta: dict, engine_meta: dict) -> dict:
+    meta = {**provider_meta, **engine_meta}
+    usage = {}
+    for source in (provider_meta, engine_meta):
+        source_usage = source.get("llm_usage")
+        if isinstance(source_usage, dict):
+            usage.update(source_usage)
+    if usage:
+        phase_summaries = [v for v in usage.values() if isinstance(v, dict)]
+        prompt_tokens = sum(int(v.get("prompt_tokens") or 0) for v in phase_summaries)
+        completion_tokens = sum(int(v.get("completion_tokens") or 0) for v in phase_summaries)
+        total_tokens = sum(int(v.get("total_tokens") or 0) for v in phase_summaries)
+        if not total_tokens:
+            total_tokens = prompt_tokens + completion_tokens
+        usage["total"] = {
+            "calls": sum(int(v.get("calls") or 0) for v in phase_summaries),
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+        }
+        meta["llm_usage"] = usage
+    return meta

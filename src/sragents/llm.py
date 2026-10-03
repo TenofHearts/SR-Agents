@@ -6,6 +6,7 @@ Config via CLI args (--model, --api-base) and env vars (OPENAI_API_BASE, OPENAI_
 
 import os
 import re
+from contextvars import ContextVar
 
 from openai import OpenAI
 
@@ -21,6 +22,7 @@ def create_llm_client(
 
 _THINK_CLOSED_RE = re.compile(r"<think>.*?</think>\s*", re.DOTALL)
 _THINK_OPEN_RE = re.compile(r"<think>.*", re.DOTALL)
+_USAGE_EVENTS: ContextVar[list[dict]] = ContextVar("sragents_usage_events", default=[])
 
 
 def strip_think_tags(text: str | None) -> str:
@@ -84,6 +86,54 @@ def _chat_kwargs(
     return kwargs
 
 
+def pop_usage_events() -> list[dict]:
+    """Return and clear LLM usage events recorded in the current context."""
+    events = list(_USAGE_EVENTS.get())
+    _USAGE_EVENTS.set([])
+    return events
+
+
+def summarize_usage(events: list[dict]) -> dict:
+    """Aggregate provider token usage events."""
+    prompt_tokens = sum(int(e.get("prompt_tokens") or 0) for e in events)
+    completion_tokens = sum(int(e.get("completion_tokens") or 0) for e in events)
+    total_tokens = sum(
+        int(e.get("total_tokens") or 0)
+        for e in events
+        if e.get("total_tokens") is not None
+    )
+    if not total_tokens:
+        total_tokens = prompt_tokens + completion_tokens
+    return {
+        "calls": len(events),
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "events": events,
+    }
+
+
+def _record_usage(response, *, phase: str) -> None:
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        event = {
+            "phase": phase,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "source": "missing",
+        }
+    else:
+        event = {
+            "phase": phase,
+            "prompt_tokens": int(getattr(usage, "prompt_tokens", 0) or 0),
+            "completion_tokens": int(getattr(usage, "completion_tokens", 0) or 0),
+            "total_tokens": int(getattr(usage, "total_tokens", 0) or 0),
+            "source": "provider",
+        }
+    _USAGE_EVENTS.set([*_USAGE_EVENTS.get(), event])
+
+
 def chat(
     client: OpenAI,
     model: str,
@@ -107,6 +157,7 @@ def chat(
         kwargs["extra_body"] = extra_body
 
     response = client.chat.completions.create(**kwargs)
+    _record_usage(response, phase="chat")
     return response.choices[0].message.content
 
 
@@ -127,4 +178,5 @@ def chat_messages(
         kwargs["extra_body"] = extra_body
 
     response = client.chat.completions.create(**kwargs)
+    _record_usage(response, phase="chat_messages")
     return response.choices[0].message.content

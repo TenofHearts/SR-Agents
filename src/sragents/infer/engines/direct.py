@@ -10,7 +10,7 @@ the prompt builder (see :mod:`sragents.prompts`).
 
 from sragents.infer.base import InferenceResult, register_engine
 from sragents.infer.engines.tool_loop import run_with_tools
-from sragents.llm import chat, get_extra_body
+from sragents.llm import chat, get_extra_body, pop_usage_events, summarize_usage
 from sragents.prompts import build_prompt
 
 
@@ -42,6 +42,7 @@ class DirectEngine:
         extra = get_extra_body(model, thinking=self.thinking)
 
         tools = [t for s in skills for t in s.get("tools", [])]
+        pop_usage_events()
 
         if tools:
             model_output, transcript = run_with_tools(
@@ -58,9 +59,11 @@ class DirectEngine:
                 extra_body=extra,
             )
             transcript = None
+        solve_usage = summarize_usage(pop_usage_events())
 
         return InferenceResult(
             raw_output=model_output,
             transcript=transcript,
             skill_ids_used=[s["skill_id"] for s in skills],
+            meta={"llm_usage": {"solve": solve_usage}},
         )
